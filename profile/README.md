@@ -1,2 +1,2 @@
 # Epik
-_Agent Assisted Development_
+_You describe it. We build it._
