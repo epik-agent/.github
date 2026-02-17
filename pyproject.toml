@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "PROJECT_NAME"
+version = "0.1.0"
+description = "PROJECT_DESCRIPTION"
+requires-python = ">=3.13"
+dependencies = [
+    # Add project-specific dependencies here
+]
+
+[project.scripts]
+# PROJECT_NAME = "PROJECT_NAME.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/PROJECT_NAME"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-cov>=7.0",
+    "ruff>=0.15",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# E: pycodestyle errors (PEP 8)
+# F: pyflakes (unused imports, undefined names)
+# I: isort (import sorting)
+# N: pep8-naming (naming conventions)
+# UP: pyupgrade (modern Python idioms)
+# PL: pylint
+# ANN: flake8-annotations (type hints)
+select = ["E", "F", "I", "N", "UP", "PL", "ANN"]
+ignore = [
+    "ANN101",  # Missing type annotation for self
+    "ANN102",  # Missing type annotation for cls
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.uv]
+package = true
