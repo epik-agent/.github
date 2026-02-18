@@ -32,7 +32,7 @@ inputs:
     required: false
     default: 'unittests'
   codecov_token:
-    description: Codecov upload token. Pass as ${{ secrets.CODECOV_TOKEN }} from the caller.
+    description: Codecov upload token. Pass secrets.CODECOV_TOKEN from the caller workflow.
     required: false
     default: ''
 
