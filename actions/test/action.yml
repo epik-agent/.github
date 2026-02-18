@@ -1,0 +1,89 @@
+name: Test
+description: >
+  Install uv, set up Python, install deps, run pytest with coverage, and upload to Codecov.
+  Supports both flat (single tests/ dir) and split (unit + integration) test layouts.
+
+inputs:
+  python_version:
+    description: Python version to use
+    required: false
+    default: '3.13'
+  uv_version:
+    description: uv version to install
+    required: false
+    default: 'latest'
+  coverage_module:
+    description: >
+      Module path passed to --cov, relative to src/. E.g. "persona" produces --cov=src/persona.
+    required: true
+  test_paths:
+    description: >
+      Space-separated test directories to run in order. Each is a separate pytest invocation;
+      coverage is appended across runs. E.g. "tests" or "tests/unit tests/integration".
+    required: false
+    default: 'tests'
+  marker_filter:
+    description: >
+      Pytest marker expression passed to -m. E.g. "not slow". Leave empty to run all tests.
+    required: false
+    default: ''
+  coverage_flags:
+    description: Comma-separated Codecov flags. E.g. "unittests" or "unittests,integrationtests".
+    required: false
+    default: 'unittests'
+  codecov_token:
+    description: Codecov upload token. Pass as ${{ secrets.CODECOV_TOKEN }} from the caller.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: ${{ inputs.uv_version }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: uv sync --dev
+
+    - name: Run tests with coverage
+      shell: bash
+      env:
+        COVERAGE_MODULE: ${{ inputs.coverage_module }}
+        TEST_PATHS: ${{ inputs.test_paths }}
+        MARKER_FILTER: ${{ inputs.marker_filter }}
+      run: |
+        first=true
+        for path in $TEST_PATHS; do
+          args=("$path" -v --tb=short \
+            "--cov=src/$COVERAGE_MODULE" \
+            --cov-report=xml \
+            --cov-report=term)
+
+          if [ -n "$MARKER_FILTER" ]; then
+            args+=(-m "$MARKER_FILTER")
+          fi
+
+          if [ "$first" = "false" ]; then
+            args+=(--cov-append)
+          fi
+
+          uv run pytest "${args[@]}"
+          first=false
+        done
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ inputs.codecov_token }}
+        files: ./coverage.xml
+        flags: ${{ inputs.coverage_flags }}
+        name: codecov-umbrella
+        fail_ci_if_error: false
