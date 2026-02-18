@@ -1,0 +1,37 @@
+name: Lint and Format
+description: Install uv, set up Python, install deps, then run ruff format check and ruff lint.
+
+inputs:
+  python_version:
+    description: Python version to use
+    required: false
+    default: '3.13'
+  uv_version:
+    description: uv version to install
+    required: false
+    default: 'latest'
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: ${{ inputs.uv_version }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: uv sync --dev
+
+    - name: Check formatting with ruff
+      shell: bash
+      run: uv run ruff format --check .
+
+    - name: Run ruff linter
+      shell: bash
+      run: uv run ruff check .
