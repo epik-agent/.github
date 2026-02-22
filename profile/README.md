@@ -1,2 +1,2 @@
 # Epik
-_You describe it. We build it._
+_You say it. We make it._
